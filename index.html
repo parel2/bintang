@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romantic Night Sky</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #0c0c2a 0%, #1a1a3e 25%, #2d1b69 50%, #1a1a3e 75%, #0c0c2a 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .stars-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite alternate;
+        }
+        
+        .star.small {
+            width: 2px;
+            height: 2px;
+            animation-duration: 2s;
+        }
+        
+        .star.medium {
+            width: 3px;
+            height: 3px;
+            animation-duration: 3s;
+        }
+        
+        .star.large {
+            width: 4px;
+            height: 4px;
+            animation-duration: 4s;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.5; transform: scale(1); }
+        }
+        
+        @keyframes starMove {
+            0% { transform: translateX(-10px) translateY(-5px); }
+            50% { transform: translateX(10px) translateY(5px); }
+            100% { transform: translateX(-10px) translateY(-5px); }
+        }
+        
+        .star.moving {
+            animation: twinkle 3s ease-in-out infinite alternate, starMove 15s ease-in-out infinite;
+        }
+        
+        .shooting-star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ffffff, 0 0 20px #ffffff, 0 0 30px #ffffff;
+            animation: shootingStar 2s linear;
+        }
+        
+        @keyframes shootingStar {
+            0% {
+                transform: translateX(-100px) translateY(-100px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(300px) translateY(300px);
+                opacity: 0;
+            }
+        }
+        
+        .shooting-star::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(45deg, transparent, white, transparent);
+            transform: translate(-50%, -50%) rotate(45deg);
+            opacity: 0.7;
+        }
+        
+        .moonlight {
+            position: absolute;
+            top: 10%;
+            right: 15%;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 30%, transparent 70%);
+            border-radius: 50%;
+            animation: moonGlow 8s ease-in-out infinite;
+        }
+        
+        @keyframes moonGlow {
+            0%, 100% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        .moon {
+            position: absolute;
+            top: 15%;
+            right: 20%;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #f8f8ff 0%, #e6e6fa 50%, #d3d3d3 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            animation: moonFloat 6s ease-in-out infinite;
+        }
+        
+        @keyframes moonFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .typewriter-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .typewriter-text {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.8rem;
+            color: #f0f8ff;
+            line-height: 1.6;
+            text-shadow: 0 0 10px rgba(240, 248, 255, 0.5);
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .cursor {
+            display: inline-block;
+            background-color: #f0f8ff;
+            width: 2px;
+            height: 1.2em;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .final-message {
+            font-family: 'Dancing Script', cursive;
+            font-size: 4rem;
+            font-weight: 700;
+            color: #ff69b4;
+            text-shadow: 0 0 20px rgba(255, 105, 180, 0.8), 0 0 40px rgba(255, 105, 180, 0.6);
+            display: none;
+            animation: finalAppear 0.5s ease-in-out;
+        }
+        
+        @keyframes finalAppear {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .typewriter-text {
+                font-size: 1.4rem;
+                width: 90%;
+            }
+            
+            .final-message {
+                font-size: 3rem;
+            }
+            
+            .moon {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .moonlight {
+                width: 100px;
+                height: 100px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .typewriter-text {
+                font-size: 1.2rem;
+            }
+            
+            .final-message {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars-container"></div>
+    <div class="moonlight"></div>
+    <div class="moon"></div>
+    
+    <div class="typewriter-container">
+        <div class="typewriter-text" id="typewriter"></div>
+        <div class="final-message" id="finalMessage">APASIH AH</div>
+    </div>
+
+    <script>
+        // Create stars
+        function createStars() {
+            const starsContainer = document.querySelector('.stars-container');
+            const starCount = 150;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // Random size
+                const sizes = ['small', 'medium', 'large'];
+                const size = sizes[Math.floor(Math.random() * sizes.length)];
+                star.classList.add(size);
+                
+                // Random position
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                
+                // Random animation delay
+                star.style.animationDelay = Math.random() * 3 + 's';
+                
+                // Make some stars move
+                if (Math.random() < 0.3) {
+                    star.classList.add('moving');
+                    star.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                }
+                
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Create shooting stars
+        function createShootingStar() {
+            const shootingStar = document.createElement('div');
+            shootingStar.className = 'shooting-star';
+            
+            // Random starting position
+            shootingStar.style.left = Math.random() * 50 + '%';
+            shootingStar.style.top = Math.random() * 50 + '%';
+            
+            document.body.appendChild(shootingStar);
+            
+            // Remove after animation
+            setTimeout(() => {
+                if (shootingStar.parentNode) {
+                    shootingStar.parentNode.removeChild(shootingStar);
+                }
+            }, 2000);
+        }
+        
+        // Typewriter effect - word by word with typing animation
+        class Typewriter {
+            constructor(element) {
+                this.element = element;
+                this.text = "fira, aku memang mengesalkan bagimu, aku suka ganggu kamu, aku tau aku membuat ini akan seperti orang kurang kerjaan dan sangat sangat tidak berguna. tapi, entah kenapa saat aku membuat sesuatu seperti ini untukmu, aku merasa sangat senang. aku ngga mengerti sama diriku sendiri, padahal aku bukan siapa siapa, aku bukan orang penting bagimu, tapi. bolehkah aku menganggap kamu orang penting bagiku?. apasih ngga jelas banget pasti aku ni, aaaaaaa,";
+                this.words = this.text.split(' ');
+                this.currentWordIndex = 0;
+                this.isComplete = false;
+                this.isTyping = false;
+                this.typingTime = 400; // Fixed typing time for all words (0.4 seconds)
+            }
+            
+            async start() {
+                if (this.isComplete) return;
+                this.typeNextWord();
+            }
+            
+            typeNextWord() {
+                if (this.currentWordIndex >= this.words.length) {
+                    // All words shown, show final message
+                    this.element.innerHTML = '';
+                    this.isComplete = true;
+                    this.showFinalMessage();
+                    return;
+                }
+                
+                const currentWord = this.words[this.currentWordIndex];
+                this.isTyping = true;
+                
+                // Type the word character by character
+                this.typeWordCharByChar(currentWord, () => {
+                    this.isTyping = false;
+                    
+                    // Calculate delay after word disappears
+                    let nextWordDelay = 200; // Default 0.2 seconds
+                    
+                    // Check if current word ends with punctuation
+                    if (currentWord.endsWith(',')) {
+                        nextWordDelay = 1500; // 1.5 seconds for comma
+                    } else if (currentWord.endsWith('.') || currentWord.endsWith('?')) {
+                        nextWordDelay = 2000; // 2 seconds for period/question mark
+                    }
+                    
+                    // Hide word after 1.5 seconds
+                    setTimeout(() => {
+                        this.element.innerHTML = '<span class="cursor"></span>';
+                        
+                        // Show next word after the calculated delay
+                        setTimeout(() => {
+                            this.currentWordIndex++;
+                            this.typeNextWord();
+                        }, nextWordDelay);
+                    }, 1500); // Word stays visible for 1.5 seconds
+                });
+            }
+            
+            typeWordCharByChar(word, callback) {
+                let charIndex = 0;
+                const charDelay = this.typingTime / word.length; // Distribute typing time evenly across characters
+                
+                const typeChar = () => {
+                    if (charIndex <= word.length) {
+                        const partialWord = word.substring(0, charIndex);
+                        this.element.innerHTML = partialWord + '<span class="cursor"></span>';
+                        charIndex++;
+                        
+                        if (charIndex <= word.length) {
+                            setTimeout(typeChar, charDelay);
+                        } else {
+                            callback();
+                        }
+                    }
+                };
+                
+                typeChar();
+            }
+            
+            showFinalMessage() {
+                const finalMessage = document.getElementById('finalMessage');
+                finalMessage.style.display = 'block';
+            }
+        }
+        
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            
+            // Create shooting stars periodically
+            setInterval(createShootingStar, 3000 + Math.random() * 4000);
+            
+            // Start typewriter effect after a short delay
+            setTimeout(() => {
+                const typewriter = new Typewriter(document.getElementById('typewriter'));
+                typewriter.start();
+            }, 1000);
+        });
+        
+        // Additional shooting stars for more randomness
+        setTimeout(() => {
+            setInterval(createShootingStar, 2000 + Math.random() * 6000);
+        }, 5000);
+    </script>
+</body>
+</html>
