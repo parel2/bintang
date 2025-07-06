@@ -173,6 +173,19 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            position: relative;
+        }
+        
+        .scattered-word {
+            position: absolute;
+            font-family: 'Crimson Text', serif;
+            font-size: 1.2rem;
+            color: #f0f8ff;
+            text-shadow: 0 0 10px rgba(240, 248, 255, 0.5);
+            white-space: nowrap;
+            opacity: 1;
+            transition: opacity 2s ease-out;
+            pointer-events: none;
         }
         
         .cursor {
@@ -300,12 +313,18 @@
         class Typewriter {
             constructor(element) {
                 this.element = element;
-                this.text = "fira, aku memang mengesalkan bagimu, aku suka ganggu kamu, aku tau aku membuat ini akan seperti orang kurang kerjaan dan sangat sangat tidak berguna. tapi, entah kenapa saat aku membuat sesuatu seperti ini untukmu, aku merasa sangat senang. aku ngga mengerti sama diriku sendiri, padahal aku bukan siapa siapa, aku bukan orang penting bagimu, tapi. bolehkah aku menganggap kamu orang penting bagiku?. apasih ngga jelas banget pasti aku ni, aaaaaaa,";
+                this.text = "fira, aku memang sering bikin kamu kesel, aku suka banget ganggu kamu, aku tau apa yang aku lakukan sekarang ini, sangat tidak bermanfaat dan hanya membuang waktu saja. bagiku membuat sesuatu hal untukmu yang aku tahu akan sangat melelahkan dan tidak ada balasan, entah mengapa aku merasa senang dengan itu. Padahal Aku bukan siapa siapa, Bukan ibu kamu bukan bapak kamu bukan kakak kamu bukan adik kamu bukan nenek kamu bukan kakek kamu dan bukan sahabat kamu, aku bukan siapa siapanya kamu, tapi. Jika dijinkan, apakah aku boleh menjadi seseorang yang penting bagimu walau hanya sekali saja?. mangsudku mungkin sebagai patner yang berharga atau sekedar sahabat yang sering nanya kabar, ngga boleh ya? pasti ngga boleh? ngga apa deh.";
                 this.words = this.text.split(' ');
                 this.currentWordIndex = 0;
                 this.isComplete = false;
                 this.isTyping = false;
                 this.typingTime = 400; // Fixed typing time for all words (0.4 seconds)
+                this.finalSentenceMode = false;
+                this.accumulatedText = '';
+                this.scatteredWords = [];
+                this.container = element.parentElement;
+                this.currentRotation = 10; // Start with 10 degrees
+                this.petalIndex = 0; // For flower petal positioning
             }
             
             async start() {
@@ -325,36 +344,227 @@
                 const currentWord = this.words[this.currentWordIndex];
                 this.isTyping = true;
                 
-                // Type the word character by character
-                this.typeWordCharByChar(currentWord, () => {
-                    this.isTyping = false;
-                    
-                    // Calculate delay after word disappears
-                    let nextWordDelay = 200; // Default 0.2 seconds
-                    
-                    // Check if current word ends with punctuation
-                    if (currentWord.endsWith(',')) {
-                        nextWordDelay = 1500; // 1.5 seconds for comma
-                    } else if (currentWord.endsWith('.') || currentWord.endsWith('?')) {
-                        nextWordDelay = 2000; // 2 seconds for period/question mark
-                    }
-                    
-                    // Hide word after 1.5 seconds
-                    setTimeout(() => {
-                        this.element.innerHTML = '<span class="cursor"></span>';
+                // Check if this is "tapi." to trigger final sentence mode
+                if (currentWord.toLowerCase() === 'tapi.') {
+                    this.handleTapiTransition(currentWord);
+                    return;
+                }
+                
+                // Check if this is "apasih" to switch back to normal mode
+                if (currentWord.toLowerCase() === 'mangsudku' && this.finalSentenceMode) {
+                    this.handleFinalSentenceEnd();
+                    return;
+                }
+                
+                // Clean word for length calculation (remove punctuation)
+                const cleanWord = currentWord.replace(/[.,?!]/g, '');
+                const isShortWord = cleanWord.length < 4;
+                
+                // Adjust typing speed for short words
+                const typingSpeed = isShortWord ? 600 : 400; // Slower for short words
+                
+                if (this.finalSentenceMode) {
+                    // In final sentence mode, accumulate words
+                    this.typeWordAccumulative(currentWord, typingSpeed, () => {
+                        this.isTyping = false;
+                        
+                        // Calculate delay after word appears
+                        let nextWordDelay = 0; // No delay between words
+                        
+                        // Check if current word ends with punctuation
+                        if (currentWord.endsWith(',')) {
+                            nextWordDelay = 1500; // 1.5 seconds for comma
+                        } else if (currentWord.endsWith('.') || currentWord.endsWith('?')) {
+                            nextWordDelay = 2000; // 2 seconds for period/question mark
+                        }
                         
                         // Show next word after the calculated delay
                         setTimeout(() => {
                             this.currentWordIndex++;
                             this.typeNextWord();
                         }, nextWordDelay);
-                    }, 1500); // Word stays visible for 1.5 seconds
+                    });
+                } else {
+                    // Normal mode - words appear scattered
+                    this.typeWordScattered(currentWord, typingSpeed, () => {
+                        this.isTyping = false;
+                        
+                        // Check if current word ends with punctuation
+                        if (currentWord.endsWith(',') || currentWord.endsWith('.') || currentWord.endsWith('?')) {
+                            // Wait 1 second then fade all scattered words
+                            setTimeout(() => {
+                                this.fadeScatteredWords(() => {
+                                    this.currentWordIndex++;
+                                    this.typeNextWord();
+                                });
+                            }, 1000);
+                        } else {
+                            // Continue immediately to next word
+                            this.currentWordIndex++;
+                            this.typeNextWord();
+                        }
+                    });
+                }
+            }
+            
+            handleTapiTransition(word) {
+                // Type "tapi." normally first
+                this.typeWordCharByChar(word, 400, () => {
+                    this.isTyping = false;
+                    
+                    // Keep "tapi." on screen for 3 seconds with fade effect
+                    this.element.style.transition = 'opacity 2s ease-out';
+                    
+                    setTimeout(() => {
+                        // Start fading
+                        this.element.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            // Clear and reset for final sentence mode
+                            this.element.innerHTML = '';
+                            this.element.style.opacity = '1';
+                            this.element.style.transition = 'none';
+                            this.finalSentenceMode = true;
+                            this.accumulatedText = '';
+                            this.currentWordIndex++;
+                            this.typeNextWord();
+                        }, 2000); // 2 seconds for fade
+                    }, 3000); // 3 seconds showing "tapi."
                 });
             }
             
-            typeWordCharByChar(word, callback) {
+            handleFinalSentenceEnd() {
+                // Wait 2 seconds, then fade out the long sentence
+                setTimeout(() => {
+                    this.element.style.transition = 'opacity 2s ease-out';
+                    this.element.style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        // Clear and reset for normal mode
+                        this.element.innerHTML = '';
+                        this.element.style.opacity = '1';
+                        this.element.style.transition = 'none';
+                        this.finalSentenceMode = false;
+                        this.accumulatedText = '';
+                        this.typeNextWord();
+                    }, 2000); // 2 seconds for fade
+                }, 2000); // 2 seconds pause before fading
+            }
+            
+            typeWordAccumulative(word, typingSpeed, callback) {
                 let charIndex = 0;
-                const charDelay = this.typingTime / word.length; // Distribute typing time evenly across characters
+                const charDelay = typingSpeed / word.length;
+                
+                const typeChar = () => {
+                    if (charIndex <= word.length) {
+                        const partialWord = word.substring(0, charIndex);
+                        const currentDisplay = this.accumulatedText + partialWord;
+                        this.element.innerHTML = currentDisplay + '<span class="cursor"></span>';
+                        charIndex++;
+                        
+                        if (charIndex <= word.length) {
+                            setTimeout(typeChar, charDelay);
+                        } else {
+                            this.accumulatedText += word + ' ';
+                            callback();
+                        }
+                    }
+                };
+                
+                typeChar();
+            }
+            
+            typeWordScattered(word, typingSpeed, callback) {
+                // Create scattered word element
+                const wordElement = document.createElement('div');
+                wordElement.className = 'scattered-word';
+                
+                // Get flower petal position
+                const position = this.getFlowerPetalPosition();
+                
+                // Use incremental rotation
+                const rotation = this.currentRotation * (Math.random() < 0.5 ? 1 : -1);
+                this.currentRotation += 10;
+                if (this.currentRotation > 60) {
+                    this.currentRotation = 10; // Reset to 10 degrees
+                }
+                
+                wordElement.style.left = position.x + 'px';
+                wordElement.style.top = position.y + 'px';
+                wordElement.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+                
+                this.container.appendChild(wordElement);
+                this.scatteredWords.push(wordElement);
+                
+                // Type the word character by character
+                let charIndex = 0;
+                const charDelay = typingSpeed / word.length;
+                
+                const typeChar = () => {
+                    if (charIndex <= word.length) {
+                        const partialWord = word.substring(0, charIndex);
+                        wordElement.innerHTML = partialWord + '<span class="cursor"></span>';
+                        charIndex++;
+                        
+                        if (charIndex <= word.length) {
+                            setTimeout(typeChar, charDelay);
+                        } else {
+                            // Remove cursor after typing
+                            wordElement.innerHTML = word;
+                            callback();
+                        }
+                    }
+                };
+                
+                typeChar();
+            }
+            
+            getFlowerPetalPosition() {
+                const centerX = this.container.offsetWidth / 2;
+                const centerY = this.container.offsetHeight / 2;
+                
+                // Create flower petal pattern
+                const petalCount = 8; // Number of petals around the center
+                const baseRadius = 80; // Base distance from center
+                
+                // Calculate angle for this petal
+                const angleStep = (2 * Math.PI) / petalCount;
+                const currentAngle = (this.petalIndex % petalCount) * angleStep;
+                
+                // Add some spiral effect by increasing radius for each layer
+                const layer = Math.floor(this.petalIndex / petalCount);
+                const radius = baseRadius + (layer * 60); // Each layer is 60px further out
+                
+                // Calculate position with slight randomization
+                const x = centerX + Math.cos(currentAngle) * radius + (Math.random() - 0.5) * 30;
+                const y = centerY + Math.sin(currentAngle) * radius + (Math.random() - 0.5) * 30;
+                
+                this.petalIndex++;
+                
+                return { x, y };
+            }
+            
+            fadeScatteredWords(callback) {
+                this.scatteredWords.forEach(wordElement => {
+                    wordElement.style.opacity = '0';
+                });
+                
+                setTimeout(() => {
+                    this.scatteredWords.forEach(wordElement => {
+                        if (wordElement.parentNode) {
+                            wordElement.parentNode.removeChild(wordElement);
+                        }
+                    });
+                    this.scatteredWords = [];
+                    this.currentRotation = 10; // Reset rotation
+                    this.petalIndex = 0; // Reset petal positioning
+                    callback();
+                }, 2000); // Wait for fade animation to complete
+            }
+            
+            typeWordCharByChar(word, typingSpeed, callback) {
+                let charIndex = 0;
+                const charDelay = typingSpeed / word.length; // Distribute typing time evenly across characters
                 
                 const typeChar = () => {
                     if (charIndex <= word.length) {
